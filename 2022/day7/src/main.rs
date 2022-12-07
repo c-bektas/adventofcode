@@ -27,11 +27,14 @@ fn main() {
            let new_size = current_size + size;
            folders.insert(key, new_size);
 
-           if path.len() > 1 {
-               let parent_key = path[0..path.len()-1].join("/");
+           // Add filesizes to parent folders
+           let mut remaining = path.clone();
+           while remaining.len() > 1 {
+               let parent_key = remaining[0..remaining.len()-1].join("/");
                let current_size = folders.get(&parent_key).expect("Should be in here");
                let new_size = current_size + size;
                folders.insert(parent_key, new_size);
+               remaining.pop();
            }
 
        }
@@ -43,5 +46,13 @@ fn main() {
            sum += size;
        }
    }
-   println!("{}", sum);
+   println!("Part 1: Sum of folders < 100000: {}", sum);
+
+   // Part 2
+   let free = 70000000 - folders.get("/").expect("");
+   let to_be_freed = 30000000 - free;
+   println!("Part 2: To be freed: {}", to_be_freed);
+   let folder = folders.into_values().filter(|x| x >= &to_be_freed).min().expect("No minimum found");
+   println!("Deleted folder size: {}", folder);
+
 }
