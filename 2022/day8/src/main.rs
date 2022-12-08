@@ -1,6 +1,25 @@
-fn visible(tree: &usize, neighbors: &[usize]) -> bool {
-    let count = neighbors.iter().filter(|x| x >= &&tree).count();
-    return count == 0;
+fn calc_score(tree: &usize, neighbors: &[usize], reverse: bool) -> i32 {
+    let mut score = 0;
+    if !reverse {
+        for (i, neighbor) in neighbors.iter().enumerate() {
+            if neighbor >= tree || i == neighbors.len()-1 {
+                score = i + 1;
+                break;
+            }
+        }
+
+    }
+
+    else {
+
+        for (i, neighbor) in neighbors.iter().rev().enumerate() {
+            if neighbor >= tree  || i == neighbors.len()-1 {
+                score = i + 1;
+                break;
+            }
+        }
+    }
+    return score as i32;
 }
 
 fn main() {
@@ -14,8 +33,8 @@ fn main() {
         rows.push(trees);
     }
 
-    // Check visibilites
-    let mut visibles: i32 = 0;
+    // Calculate scores
+    let mut highest_score = 0;
     for (row_idx, row) in rows.iter().enumerate() {
         for (tree_idx, tree) in row.iter().enumerate() {
 
@@ -25,12 +44,12 @@ fn main() {
             let left = &row[0..tree_idx];
             let right = &row[tree_idx+1..row.len()];
            
-            if visible(tree, top) || visible(tree, bottom) || visible(tree, left) || visible(tree, right) {
-                visibles += 1;
+            let score = calc_score(tree, top, true) * calc_score(tree, bottom, false) * calc_score(tree, left, true) * calc_score(tree, right, false);
+            if score > highest_score {
+                highest_score = score;
             }
-
         }
     }
 
-    println!("{}", visibles);
+    println!("{}", highest_score);
 }
