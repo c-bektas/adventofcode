@@ -1,6 +1,5 @@
 use std::collections::HashSet;
 
-#[derive(Copy, Clone)]
 struct Point {
     x: i32,
     y: i32
@@ -52,7 +51,6 @@ impl Point {
     }
 }
 
-#[derive(Clone)]
 struct Rope {
     head: Point,
     tail: Point,
@@ -73,36 +71,7 @@ impl Rope {
         self.tail_visited.insert(self.tail.as_tuple());
     }
 
-    fn move_head(&mut self, action: &Point){
-        self.head.add(&action);
-        if self.tail_too_far() {
-            self.move_tail();
-        }
-    }
-
-    fn set_head(&mut self, head: &Point) {
-        self.head = *head;
-        if self.tail_too_far() {
-            self.move_tail();
-        }
-    }
-
-    fn get_visited(&self) -> usize {
-        return self.tail_visited.len();
-    }
-
-}
-fn main() {
-
-    let mut ropes = vec![];
-    for _ in 0..9 {
-        let rope = Rope{head: Point{x: 0, y:0}, tail: Point{x: 0, y: 0}, tail_visited: HashSet::new()};
-        ropes.push(rope);
-    }
-    let lines = include_str!("../input_day9").lines();
-    for line in lines {
-        let (direction, steps) = line.split_once(" ").expect("Should split");
-        let steps = steps.to_string().parse::<i32>().expect("Should parse");
+    fn move_head(&mut self, direction: &str, steps: i32){
 
         let mut mov_x = 0;
         let mut mov_y = 0;
@@ -119,19 +88,28 @@ fn main() {
             actions.push(Point{x: mov_x, y: mov_y});
         }
 
-        // The tail of the previous is the head of the next rope
         for action in actions {
-            let mut next_head = Point{x: 0, y: 0};
-            for (i, rope) in ropes.iter_mut().enumerate() {
-                if i > 0 {
-                    rope.set_head(&next_head);
-                }
-                else {
-                    rope.move_head(&action);
-                }
-                next_head = rope.tail.clone();
+            self.head.add(&action);
+            if self.tail_too_far() {
+                self.move_tail();
             }
         }
     }
-    println!("Tail visited: {}", ropes.last().expect("").get_visited() + 1);
+
+    fn get_visited(&self) -> usize {
+        return self.tail_visited.len();
+    }
+
+}
+fn main() {
+    let mut rope = Rope{ head: Point{x:0, y:0}, tail: Point{x:0, y:0}, tail_visited: HashSet::new()};
+
+    let lines = include_str!("../input_day9").lines();
+    for line in lines {
+        let (direction, steps) = line.split_once(" ").expect("Should split");
+        let steps = steps.to_string().parse::<i32>().expect("Should parse");
+        rope.move_head(direction, steps);
+    }
+
+    println!("Tail visited: {}", rope.get_visited());
 }
