@@ -24,26 +24,13 @@ fn main() {
         }
     }
 
-    // Render the CRT screen
+    let mut signal_sum = 0;
+    for cycle in [20, 60, 100, 140, 180, 220] {
+        let signal_strength = register[cycle] * cycle as i32;
+        println!("{}th is {}", cycle, signal_strength);
+        signal_sum += signal_strength;
+    } 
 
-    let mut current_position = 0;
-    let mut current_line = vec![];
-    
-    // Remove first 1, because it was faultfully added in the first part
-    for reg in register[1..register.len()].iter() {
+    println!("Sum Signal Strength: {}", signal_sum);
 
-        let mut current_pixel = ".";
-        let diff = current_position - reg;
-        if diff.abs() <= 1 {
-            current_pixel = "#";
-        }
-        
-        current_line.push(current_pixel);
-        current_position += 1;
-        if current_position > 39 {
-            current_position = 0;
-            println!("{}", current_line.join(""));
-            current_line.clear();
-        }
-    }
 }
