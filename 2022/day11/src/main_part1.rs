@@ -2,11 +2,11 @@ use std::str::FromStr;
 
 #[derive(Clone)]
 struct Monkey {
-    items: Vec<i128>,
+    items: Vec<i32>,
     add: bool,
-    worry_factor: i128,
-    divisor: i128,
-    inspect_counter: i128,
+    worry_factor: i32,
+    divisor: i32,
+    inspect_counter: i32,
     true_monkey: usize,
     false_monkey: usize
 }
@@ -19,7 +19,7 @@ impl FromStr for Monkey {
             return Err::<Monkey, String>("test".to_string());
         }
 
-        let mut items: Vec<i128> = vec![];
+        let mut items: Vec<i32> = vec![];
         let mut add = false;
         let mut worry_factor = 0;
         let mut divisor = 0;
@@ -29,7 +29,7 @@ impl FromStr for Monkey {
         for line in s.lines() {
             if line.starts_with("  Sta") {
                 let line = line.strip_prefix("  Starting items: ").expect("Should strip");
-                items = line.split(", ").map(|x| x.parse::<i128>().unwrap()).collect::<Vec<i128>>();
+                items = line.split(", ").map(|x| x.parse::<i32>().unwrap()).collect::<Vec<i32>>();
             }
             if line.starts_with("  Ope") {
                 let line = line.strip_prefix("  Operation: new = old ").expect("Should strip");
@@ -43,13 +43,13 @@ impl FromStr for Monkey {
                 match factor {
                     "old" => worry_factor = -1, // Will be handled later as square root
                     _ => {
-                        worry_factor = factor.parse::<i128>().expect("Should parse");
+                        worry_factor = factor.parse::<i32>().expect("Should parse");
                     }
                 }
             }
             if line.starts_with("  Te") {
                 let line = line.strip_prefix("  Test: divisible by ").expect("Should strip");
-                divisor = line.parse::<i128>().expect("Should parse");
+                divisor = line.parse::<i32>().expect("Should parse");
             }
             if line.starts_with("    If"){
                 let line = line.strip_prefix("    If ").expect("Should strip");
@@ -69,7 +69,7 @@ impl FromStr for Monkey {
 }
 
 impl Monkey {
-    fn remove_items(&mut self, items: &[i128]) {
+    fn remove_items(&mut self, items: &[i32]) {
 
         let mut new_items = vec![];
         for item in self.items.iter() {
@@ -81,11 +81,11 @@ impl Monkey {
         self.items = new_items;
     }
     
-    fn iter_inspect(&mut self, inspected: i128) {
+    fn iter_inspect(&mut self, inspected: i32) {
         self.inspect_counter = self.inspect_counter + inspected;
     }
 
-    fn push(&mut self, item: i128) {
+    fn push(&mut self, item: i32) {
         self.items.push(item);
     }
 }
@@ -102,52 +102,53 @@ fn main() {
         }
     }
     
-    // Calculate least common multiple 
-    let factor: i128 = monkeys.iter().map(|x| x.divisor).product();
+    for monkey in monkeys.iter() {
+        println!("{:?}", monkey.items);
+    }
 
     // Play Rounds
-    for _round in 0..10000 {
-        //println!("Round {}", _round);
+    for _round in 1..21 {
+        println!("Round {}", _round);
         for i in 0..monkeys.len() {
             let monkey = &mut monkeys[i];
-            //println!("Monkey {}:", i);
+            println!("Monkey {}:", i);
             let mut to_remove = vec![];
             let mut inspected = 0;
             let mut to_add = vec![];
 
-            //println!("Monkey {}: {:?}", i, monkey.items);
+            println!("Monkey {}: {:?}", i, monkey.items);
             for item in monkey.items.iter() {
 
-                //println!("  Monkey inspects item with worry level {}", item);
+                println!("  Monkey inspects item with worry level {}", item);
                 inspected +=1;
                 let mut worry_level;
                 if monkey.add {
                     worry_level = monkey.worry_factor + item;
-                    //println!("    Worry Level is added by {} to {}", monkey.worry_factor, worry_level);
+                    println!("    Worry Level is added by {} to {}", monkey.worry_factor, worry_level);
                 }
                 else {
                     if monkey.worry_factor == -1 {
                         worry_level = item * item;
-                        //println!("    Worry Level is multiplied by itself to {}", worry_level);
+                        println!("    Worry Level is multiplied by itself to {}", worry_level);
                     }
                     else {
                         worry_level = monkey.worry_factor * item;
-                        //println!("    Worry level is multiplied by {} to {}", monkey.worry_factor, worry_level);
+                        println!("    Worry level is multiplied by {} to {}", monkey.worry_factor, worry_level);
                     }
                 }
 
-                worry_level = worry_level % factor;
-                //println!("    Worry Level is divided by 3 to {}", worry_level);
+                worry_level = worry_level / 3;
+                println!("    Worry Level is divided by 3 to {}", worry_level);
                 let throw_idx;
                 if worry_level % monkey.divisor == 0 {
-                    //println!("    Current worry level divisible by {}", monkey.divisor);
+                    println!("    Current worry level divisible by {}", monkey.divisor);
                     throw_idx = monkey.true_monkey;
                 }
                 else {
-                    //println!("    Current worry level is not divisible by {}", monkey.divisor);
+                    println!("    Current worry level is not divisible by {}", monkey.divisor);
                     throw_idx = monkey.false_monkey;
                 }
-                //println!("    Item with worry level {} is thrown to monkey {}", worry_level, throw_idx);
+                println!("    Item with worry level {} is thrown to monkey {}", worry_level, throw_idx);
                 to_add.push((throw_idx, worry_level.clone()));
                 to_remove.push(item.clone());
             }
@@ -160,16 +161,19 @@ fn main() {
             }
 
         }
+        for (i, monkey) in monkeys.iter().enumerate() {
+            println!("Monkey {}: {:?}", i, monkey.items);
+        }
     }
     
-    let mut inspect_counters = monkeys.iter().map(|x| x.inspect_counter).collect::<Vec<i128>>();
+    let mut inspect_counters = monkeys.iter().map(|x| x.inspect_counter).collect::<Vec<i32>>();
     for (i, counter) in inspect_counters.iter().enumerate() {
         println!("Monkey {} inspected items {} times.", i, counter);
     }
 
     inspect_counters.sort();
     println!("{:?}", inspect_counters);
-    let score = inspect_counters[inspect_counters.len()-2..inspect_counters.len()].iter().product::<i128>();
+    let score = inspect_counters[inspect_counters.len()-2..inspect_counters.len()].iter().product::<i32>();
     println!("The score is {}", score);
 
 
